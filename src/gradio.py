@@ -1,7 +1,12 @@
 import gradio as gr
 import os
+from src.utils.cmaps import spectra, spectra_warm
 from pydub import AudioSegment  # for combining stems
 
+cmap_mappings = {
+    "Spectra (Cool)": spectra,
+    "Spectra (Warm)": spectra_warm,
+}
 
 def ui():
     with gr.Blocks() as demo:
@@ -11,28 +16,22 @@ def ui():
 
         # Fixed slots for 4 stems
         with gr.Row():
-            render_output = gr.Video(label="Output", type="filepath")
-
-
+            render_output = gr.File(label="Output", file_types=[".mp4", ".mov"])
+        
 
         # ---- Stem splitting ----
         def on_submit(file):
             from src.render import render_audio
-
             output_path = render_audio(path=file.name, opacity=0.7)
 
-            labels, audios, files = splitter(file, output_path="./output")
-            print(files, audios)
-            del splitter
+            print(output_path)
 
             # Map results back into fixed slots
             mapping = {
                 "render": render_output,
             }
 
-            render_vals = [output_path]
-
-            return render_vals
+            return gr.Video(mapping['render'])
 
         audio_input.change(
             fn=on_submit,

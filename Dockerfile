@@ -7,7 +7,7 @@ WORKDIR $WD
 
 # install dependencies
 FROM base AS dependencies_install
-RUN apt-get update -y && apt-get install -y cmake git pkg-config libsdl-pango-dev libglew-dev libpango1.0-dev \
+RUN apt update -y && apt install -y cmake git pkg-config build-essential libsdl-pango-dev libglew-dev libpango1.0-dev \
                     pkg-config nasm texlive-latex-base portaudio19-dev python3-pyaudio libasound2-plugins \
                     libgif-dev libcairo2-dev libpango1.0-dev
 
