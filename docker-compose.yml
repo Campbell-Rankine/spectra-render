@@ -1,0 +1,11 @@
+services:
+  render:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    network_mode: host
+    volumes:
+      - "./output/:/root/spectra/output/"
+      - "./bin/:/root/spectra/bin/"

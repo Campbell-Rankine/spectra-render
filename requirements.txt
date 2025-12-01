@@ -1,0 +1,13 @@
+scipy
+scikit-learn
+moviepy
+cffi
+gradio
+ffmpeg
+scipy
+tqdm
+manim
+plotly
+pyflac
+soundfile
+matplotlib

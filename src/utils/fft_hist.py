@@ -1,0 +1,81 @@
+import numpy as np
+from manim import *
+from scipy.fft import rfft, rfftfreq
+import os
+import logging
+from typing import Any, Optional
+from scipy.interpolate import interp1d
+from matplotlib import cm
+from manim import color
+from tqdm import tqdm
+
+from src.utils.audio import AudioIO
+from src.utils.cmaps import spectra, spectra_warm
+from src.utils.transforms import sqrt_transform, exp_transform
+from src.utils.base import _BaseAudioVisualizer
+
+class FFT_Histogram(_BaseAudioVisualizer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    # Extend the scene class by writing the construct function
+    def construct(self):
+        # calculate number of frames to animate and create databar
+        self.num_animations = self.fps * (len(self.samples)/self.sample_rate)
+
+        # compute fft frames
+        self.log(
+            f"Samples shape: {self.samples.shape}, Sample rate: {self.sample_rate}, Number to Animate: {self.num_animations}",
+            "info",
+        )
+
+        # Get bins
+        bin_indices = self.get_bin_indices(self.frequencies, self.log_base)
+
+        # create manim mobjects
+        bars = VGroup()
+        curr_frame = ValueTracker(0)
+
+        # === Function to draw FFT bars ===
+        def get_fft_bars():
+            frame_idx = int(curr_frame.get_value())
+            clip_amount = len(self.fft_frames) - 1
+            
+            frame_idx = np.clip(frame_idx, 0, len(self.fft_frames) - 1)
+            mags = self.fft_frames[frame_idx]
+            counts, bins = np.histogram(mags, bin_indices)
+
+            bars = VGroup()
+            for i, (count, bin) in enumerate(zip(mags, bins)):
+                sqrt_height = min(sqrt_transform(count), self.height_clipping)
+                if not sqrt_height == self.height_clipping:
+                    if i >= 100:
+                        sqrt_height = 0.6 * sqrt_height
+                    else:
+                        sqrt_height = sqrt_height * 0.4
+                sqrt_height = self.remove_outliers(sqrt_height, z_min=2.25)
+                bar = Rectangle(
+                    width=self.bar_width,
+                    height=max(sqrt_height, self.min_height),
+                    fill_color=self.color_for_amplitude(count),
+                    fill_opacity=self.opacity,
+                    stroke_width=0,
+                ).move_to(
+                    ((((i-1)*self.bar_width)+self.translate_x), self.translate_y, self.translate_z)
+                )
+                bars.add(bar)
+            self.animation_counter += 1
+            return bars
+        
+        # === Dynamic FFT Bars ===
+        bars = always_redraw(get_fft_bars)
+        self.add(bars)
+
+        # === Animate over frames ===
+        self.add_sound(self.io.path, time_offset=0)
+        self.play(
+            curr_frame.animate.set_value(len(self.fft_frames)-1), 
+            run_time=self.samples.shape[0]/self.sample_rate, 
+            rate_func=linear
+        )
+        self.wait()
