@@ -22,16 +22,9 @@ def ui():
         # ---- Stem splitting ----
         def on_submit(file):
             from src.render import render_audio
-            output_path = render_audio(path=file.name, opacity=0.7)
-
+            output_path = render_audio(path=file.name, opacity=0.7, translate_x=-7)
             print(output_path)
-
-            # Map results back into fixed slots
-            mapping = {
-                "render": render_output,
-            }
-
-            return gr.Video(mapping['render'])
+            return gr.Video(output_path)
 
         audio_input.change(
             fn=on_submit,

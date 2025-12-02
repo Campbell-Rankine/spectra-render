@@ -19,7 +19,7 @@ def render_audio(path: str, opacity: float, translate_x=0, translate_y=-0.5, tra
         raise ValueError(f"File does not exist at path: {path}")
 
     output_file = f"{path.split('/')[-1].split('.')[0]}-render"
-    output_path = f"./output/{output_file}"
+    output_path = f"./output/video/{output_file}.mp4"
     logger.info(f"Rendering file at: {path}, Output location: {output_file}")
 
     with tempconfig(
